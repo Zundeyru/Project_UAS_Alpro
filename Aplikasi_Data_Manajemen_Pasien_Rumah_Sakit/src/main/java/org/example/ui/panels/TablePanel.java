@@ -93,8 +93,20 @@ public class TablePanel extends JPanel {
         String gender = (String) model.getValueAt(r, 3);
         String diagnosis = (String) model.getValueAt(r, 4);
 
-        // phone & address tidak ada di tabel -> isi kosong, nanti mainframe akan ambil detail asli dari service.
+        // phone & address tidak ada di tabel -> isi kosong, nanti MainFrame akan ambil detail asli dari service.
         return new Patient(id, name, age, gender, diagnosis, "", "");
+    }
+
+    // ✅ BARU: ambil ID pasien dari row yang sedang dipilih
+    public Integer getSelectedPatientId() {
+        int r = table.getSelectedRow();
+        if (r < 0) return null;
+        return (Integer) model.getValueAt(r, 0); // kolom ID
+    }
+
+    // ✅ BARU: bersihkan selection setelah delete/refresh
+    public void clearSelection() {
+        table.clearSelection();
     }
 
     private static class ZebraRenderer extends DefaultTableCellRenderer {

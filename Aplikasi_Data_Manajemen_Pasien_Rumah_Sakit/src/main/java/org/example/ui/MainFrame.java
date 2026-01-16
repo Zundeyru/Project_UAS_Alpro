@@ -11,7 +11,6 @@ import org.example.util.UITheme;
 import org.example.util.Validator;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
 import java.io.FileWriter;
@@ -50,9 +49,7 @@ public class MainFrame extends JFrame {
         setContentPane(buildRoot());
         UITheme.applyDefaultFont(getContentPane());
 
-        // default: sorted by ID (InOrder)
         refreshTable(TraversalMode.SORTED);
-
         wireEvents();
     }
 
@@ -74,10 +71,8 @@ public class MainFrame extends JFrame {
 
         JLabel title = new JLabel("🏥 Manajemen Data Pasien Rumah Sakit");
         title.setFont(UITheme.titleFont());
-
         header.add(title, BorderLayout.WEST);
 
-        // Search + mode panel
         JPanel right = new JPanel(new GridBagLayout());
         right.setBackground(new Color(250, 250, 250));
 
@@ -107,8 +102,8 @@ public class MainFrame extends JFrame {
         gm.gridy = 1;
         modePanel.add(cbTraversal, gm);
 
-        cbTraversal.setEnabled(false); // default: tidak aktif (BST tidak menonjol)
-        cbTraversal.setSelectedIndex(0); // InOrder default
+        cbTraversal.setEnabled(false);
+        cbTraversal.setSelectedIndex(0);
 
         gc.gridx = 0; gc.weightx = 0.55;
         right.add(searchPanel, gc);
@@ -124,12 +119,10 @@ public class MainFrame extends JFrame {
         JPanel center = new JPanel(new BorderLayout(12, 12));
         center.setBackground(new Color(250, 250, 250));
 
-        // Kiri: Form
         JPanel left = new JPanel(new BorderLayout());
         left.setBackground(new Color(250, 250, 250));
         left.add(formPanel, BorderLayout.CENTER);
 
-        // Kanan: Table
         JPanel right = new JPanel(new BorderLayout());
         right.setBackground(new Color(250, 250, 250));
         right.add(tablePanel, BorderLayout.CENTER);
@@ -150,13 +143,12 @@ public class MainFrame extends JFrame {
     }
 
     private void wireEvents() {
-        // Klik row -> detail (ambil detail asli via search service)
+        // Double click row -> detail (ambil detail asli via service)
         tablePanel.setRowClickListener(rowPatient -> {
             Patient full = service.findPatientById(rowPatient.getPatientId());
             if (full != null) showPatientDetail(full);
         });
 
-        // ActionPanel
         actionPanel.setActionListener(new ActionPanel.ActionListener() {
             @Override public void onAdd() { handleAdd(); }
             @Override public void onDelete() { handleDelete(); }
@@ -165,20 +157,17 @@ public class MainFrame extends JFrame {
             @Override public void onExportCsv() { handleExportCsv(); }
         });
 
-        // Search
         btnSearch.addActionListener(e -> handleSearch());
         tfSearchId.addActionListener(e -> handleSearch());
 
-        // Mode analisis
         cbViewMode.addActionListener(e -> {
             boolean analysis = cbViewMode.getSelectedIndex() == 1;
             cbTraversal.setEnabled(analysis);
 
             if (!analysis) {
-                cbTraversal.setSelectedIndex(0); // balik ke inOrder
+                cbTraversal.setSelectedIndex(0);
                 refreshTable(TraversalMode.SORTED);
             } else {
-                // saat masuk analisis, default tetap inOrder tapi user bisa ubah
                 refreshTable(TraversalMode.SORTED);
             }
         });
@@ -236,10 +225,7 @@ public class MainFrame extends JFrame {
                 return;
             }
 
-            // Highlight di tabel (kalau tampilan sekarang bukan sorted, highlight bisa tetap jalan jika data ada)
             tablePanel.highlightByPatientId(id);
-
-            // Tampilkan detail dialog agar user-friendly
             showPatientDetail(found);
 
         } catch (Exception ex) {
@@ -247,19 +233,28 @@ public class MainFrame extends JFrame {
         }
     }
 
+    // ✅ DELETE WAJIB DARI TABEL: kalau belum pilih -> peringatan pilih pasien
     private void handleDelete() {
         try {
-            // delete berdasarkan ID yang ada di form (lebih natural)
-            // kalau form kosong, coba dari search bar
-            String idText = guessDeleteIdText();
-            int id = Validator.requirePositiveInt(idText, "ID Pasien");
+            Integer selectedId = tablePanel.getSelectedPatientId();
 
-            Patient candidate = service.findPatientById(id);
-            if (candidate == null) {
+            if (selectedId == null) {
                 JOptionPane.showMessageDialog(this,
-                        "Tidak bisa hapus. Pasien dengan ID " + id + " tidak ditemukan.",
-                        "Gagal",
+                        "Pilih salah satu pasien di tabel terlebih dahulu,\n" +
+                                "lalu tekan tombol 🗑️ Hapus.",
+                        "Belum Memilih Pasien",
                         JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            Patient candidate = service.findPatientById(selectedId);
+            if (candidate == null) {
+                // jarang terjadi (misalnya tabel belum refresh)
+                JOptionPane.showMessageDialog(this,
+                        "Data pasien yang dipilih tidak ditemukan lagi. Silakan refresh dengan mengganti mode tampilan.",
+                        "Data Tidak Sinkron",
+                        JOptionPane.WARNING_MESSAGE);
+                refreshTable(traversalFromDropdown());
                 return;
             }
 
@@ -272,13 +267,15 @@ public class MainFrame extends JFrame {
 
             if (confirm != JOptionPane.YES_OPTION) return;
 
-            boolean ok = service.removePatient(id);
+            boolean ok = service.removePatient(selectedId);
             if (ok) {
                 JOptionPane.showMessageDialog(this,
-                        "Pasien ID " + id + " berhasil dihapus.",
+                        "Pasien ID " + selectedId + " berhasil dihapus.",
                         "Sukses",
                         JOptionPane.INFORMATION_MESSAGE);
+
                 refreshTable(traversalFromDropdown());
+                tablePanel.clearSelection();
             } else {
                 showError("Hapus gagal: ID tidak ditemukan.");
             }
@@ -286,33 +283,6 @@ public class MainFrame extends JFrame {
         } catch (Exception ex) {
             showError(ex.getMessage());
         }
-    }
-
-    private String guessDeleteIdText() {
-        // Prioritas: ID di form (lebih sering dipakai)
-        // Kalau kosong, pakai search bar
-        // (Tidak “memaksa” user ngerti BST)
-        String fromForm = getIdFieldIfExistsFromForm();
-        if (fromForm != null && !fromForm.trim().isEmpty()) return fromForm;
-        return tfSearchId.getText();
-    }
-
-    // Trick kecil supaya tetap sesuai desain class: FormPanel menyimpan field, tapi tidak expose ID langsung.
-    // Jadi kita ambil dari komponen pertama yang biasanya tfId. Ini aman karena FormPanel punya urutan tetap.
-    private String getIdFieldIfExistsFromForm() {
-        // FormPanel internal layout: tidak ada getter id.
-        // Tapi untuk UX delete, kita butuh ID.
-        // Solusi clean-ish: iterate components, ambil JTextField yang labelnya "ID Pasien".
-        // Karena ini proyek belajar, pendekatan ini cukup rapi tanpa nambah method extra.
-        for (Component c : formPanel.getComponents()) {
-            if (c instanceof JTextField) {
-                JTextField tf = (JTextField) c;
-                // field pertama yang merupakan ID biasanya berisi angka dan panjang kecil
-                // tidak 100% perfect, tapi cukup (dan tidak memecah struktur class yang kamu minta).
-                return tf.getText();
-            }
-        }
-        return null;
     }
 
     private void handleSeedData() {
@@ -330,7 +300,7 @@ public class MainFrame extends JFrame {
                 "Sukses",
                 JOptionPane.INFORMATION_MESSAGE);
 
-        cbViewMode.setSelectedIndex(0);      // balik ke tampilan terurut
+        cbViewMode.setSelectedIndex(0);
         cbTraversal.setSelectedIndex(0);
         cbTraversal.setEnabled(false);
         refreshTable(TraversalMode.SORTED);
@@ -338,7 +308,7 @@ public class MainFrame extends JFrame {
 
     private void handleExportCsv() {
         try {
-            List<Patient> patients = service.getPatientsSorted(); // export versi terurut (lebih user-friendly)
+            List<Patient> patients = service.getPatientsSorted();
             if (patients.isEmpty()) {
                 JOptionPane.showMessageDialog(this,
                         "Tidak ada data untuk diexport.",
@@ -404,9 +374,7 @@ public class MainFrame extends JFrame {
                 JOptionPane.ERROR_MESSAGE);
     }
 
-    // =====================
     // Seed Data (12 pasien)
-    // =====================
     private void seedData() {
         Random rnd = new Random();
         Set<Integer> usedIds = new HashSet<>();
@@ -446,7 +414,7 @@ public class MainFrame extends JFrame {
             try {
                 service.addPatient(id, name, age, gender, diagnosis, phone, address);
             } catch (Exception ignored) {
-                // jika kebetulan duplikat (sangat kecil kemungkinan), skip
+                // kalau duplikat (sangat kecil), skip
             }
         }
     }
