@@ -1,124 +1,165 @@
-# 🏥 Aplikasi Manajemen Data Pasien Rumah Sakit (Desktop Java Swing)
+# 🏥 Aplikasi Manajemen Data Pasien Rumah Sakit
+*(Desktop Java Swing)*
 
-Aplikasi ini adalah program desktop sederhana untuk **mengelola data pasien rumah sakit** secara cepat dan rapi.  
-Data pasien disimpan **di memori (in-memory)**, jadi **tidak memakai database**. Cocok untuk tugas struktur data dan demo aplikasi desktop.
+Aplikasi ini merupakan program desktop berbasis **Java Swing** yang digunakan untuk **mengelola data pasien rumah sakit** secara sederhana, cepat, dan rapi.  
+Seluruh data pasien disimpan **di memori (in-memory)** tanpa menggunakan database, sehingga aplikasi ini sangat cocok digunakan sebagai **studi kasus Struktur Data**, khususnya **Binary Search Tree (BST)** dan **Traversal**.
 
 ---
 
 ## 1) Tujuan Aplikasi
-Dengan aplikasi ini, petugas bisa:
+Aplikasi ini dibuat untuk membantu petugas rumah sakit dalam:
 - **Menambah** data pasien baru
-- **Mencari** pasien berdasarkan **ID Pasien**
-- **Menghapus** pasien berdasarkan **ID Pasien**
-- Melihat daftar pasien **terurut berdasarkan ID** secara otomatis (default)
+- **Mencari** data pasien berdasarkan **ID Pasien**
+- **Menghapus** data pasien dengan aman
+- Melihat daftar pasien yang **selalu terurut berdasarkan ID Pasien** secara otomatis
 
 ---
 
-## 2) Studi Kasus: Kenapa Pakai Binary Search Tree (BST)?
-**Masalah dunia nyata:**
-Rumah sakit bisa punya **banyak pasien** (ratusan/ribuan). Petugas sering butuh:
-- Mencari pasien berdasarkan **ID** dengan cepat
-- Menambah pasien baru tanpa membuat data berantakan
-- Menghapus pasien tertentu tanpa harus menyusun ulang data manual
+## 2) Studi Kasus: Mengapa Menggunakan Binary Search Tree (BST)?
 
-**BST cocok karena:**
-- Data disimpan berdasarkan **patientId** (angka, unik)
-- Memudahkan:
-    - **Insert** (Tambah pasien)
-    - **Search** (Cari pasien)
-    - **Delete** (Hapus pasien)
-- Dan yang paling penting: dengan traversal tertentu, data bisa ditampilkan **rapi & terurut**.
+### Masalah Dunia Nyata
+Dalam lingkungan rumah sakit, data pasien dapat berjumlah **banyak (ratusan hingga ribuan)**.  
+Aktivitas yang sering dilakukan antara lain:
+- Mencari pasien berdasarkan **ID Pasien**
+- Menambahkan pasien baru setiap hari
+- Menghapus data pasien tertentu
+- Menampilkan daftar pasien secara rapi dan terstruktur
 
-> Di aplikasi ini, BST adalah “mesin” di belakang layar.  
-> User tidak perlu paham BST untuk memakai aplikasi.
+Jika menggunakan struktur data biasa (misalnya array atau list), pencarian dan pengelolaan data akan menjadi kurang efisien.
+
+### Alasan BST Digunakan
+Aplikasi ini menggunakan **Binary Search Tree (BST)** karena:
+- Data disimpan berdasarkan **patientId** (angka dan unik)
+- Mendukung operasi utama secara efisien:
+    - **Insert** → menambah data pasien
+    - **Search** → mencari pasien berdasarkan ID
+    - **Delete** → menghapus pasien berdasarkan ID
+- Dengan traversal tertentu, data dapat ditampilkan **terurut otomatis** tanpa proses sorting tambahan
+
+> Pada aplikasi ini, BST berperan sebagai **mesin internal** (back-end logic).  
+> Pengguna tidak perlu memahami BST untuk dapat menggunakan aplikasi.
 
 ---
 
-## 3) Studi Kasus: Di Mana Traversal Dipakai?
-Traversal adalah cara “mengunjungi” data yang tersimpan di BST.
+## 3) Studi Kasus: Peran Traversal dalam Aplikasi
 
-### ✅ Tampilan Utama (Default): Data Terurut (InOrder)
-- Di UI utama, tabel pasien **selalu tampil terurut berdasarkan ID**.
-- Ini terjadi karena aplikasi mengambil data menggunakan **InOrder Traversal**.
+Traversal adalah cara untuk **mengambil data dari BST** dengan urutan tertentu.
 
-**Makna untuk user:**  
-Petugas melihat daftar pasien rapi dari ID kecil ke besar tanpa perlu sort manual.
+### A) Tampilan Utama (Default): Data Terurut – *InOrder Traversal*
+- Pada tampilan utama, tabel pasien **selalu ditampilkan terurut berdasarkan ID Pasien**.
+- Hal ini dilakukan dengan menggunakan **InOrder Traversal** pada BST.
 
-### 🧪 Mode Analisis (Opsional): Struktur Kunjungan Node
-Aplikasi menyediakan dropdown kecil **Mode Tampilan**:
-- **Tampilan Data: Terurut (Default)** → memakai InOrder (normal)
-- **Tampilan Data: Analisis Struktur** → user bisa pilih:
+**Manfaat bagi pengguna:**  
+Petugas langsung melihat data pasien dari ID terkecil ke terbesar tanpa perlu mengurutkan secara manual.
+
+---
+
+### B) Mode Analisis (Opsional): Traversal Struktur BST
+Aplikasi menyediakan fitur tambahan **Mode Tampilan**:
+- **Tampilan Data: Terurut (Default)**  
+  → Menggunakan InOrder Traversal
+- **Tampilan Data: Analisis Struktur**  
+  → Menyediakan pilihan:
     - **Urutan Kunjungan Node (PreOrder)**
     - **Urutan Kunjungan Node (PostOrder)**
 
-**Makna untuk tugas struktur data:**  
-Mode Analisis membantu menunjukkan bahwa data memang disimpan sebagai BST dan traversal bisa menghasilkan urutan berbeda.
+**Tujuan Mode Analisis:**  
+Mode ini digunakan untuk keperluan **pembelajaran dan analisis struktur data**, agar terlihat bahwa traversal yang berbeda akan menghasilkan urutan data yang berbeda pula.
 
-> Di UI, traversal tidak ditulis “BST mode” agar user biasa tidak bingung.  
-> Tapi untuk tugas, fitur ini tetap ada.
+> Traversal tidak ditampilkan secara teknis sebagai “BST Mode” pada UI utama agar tetap user-friendly,  
+> namun tetap tersedia untuk kebutuhan akademik.
 
 ---
 
 ## 4) Cara Penggunaan Aplikasi
 
 ### A) Menambah Pasien (➕ Tambah)
-1. Isi form di panel kiri:
-    - ID Pasien (angka, unik)
+1. Isi form pada panel kiri:
+    - ID Pasien (angka, harus unik)
     - Nama
     - Umur
-    - Gender (combo)
+    - Gender (dropdown)
     - Diagnosis
     - Telepon
     - Alamat
-2. Klik **➕ Tambah**
-3. Jika sukses → data muncul di tabel kanan (terurut otomatis)
-4. Jika ID sudah ada → aplikasi menolak dan menampilkan pesan error
+2. Klik tombol **➕ Tambah**
+3. Jika berhasil:
+    - Data pasien akan muncul di tabel
+    - Tabel otomatis terurut berdasarkan ID
+4. Jika ID sudah ada:
+    - Aplikasi menampilkan pesan error
+
+---
 
 ### B) Mencari Pasien (🔍 Cari)
-1. Masukkan ID di bagian atas: **Cari ID Pasien**
-2. Klik **🔍 Cari**
+1. Masukkan ID Pasien pada kolom **Cari ID Pasien** di bagian atas
+2. Klik tombol **🔍 Cari**
 3. Hasil:
-    - Baris pada tabel akan di-highlight (jika ada)
-    - Detail pasien akan ditampilkan dalam dialog
+    - Baris pasien akan di-highlight pada tabel
+    - Detail pasien ditampilkan dalam dialog
 
-### C) Melihat Detail Pasien (Double Click di tabel)
-1. Double click salah satu baris pada tabel
-2. Muncul popup **Detail Pasien** (ID, Nama, Umur, Gender, Diagnosis, Telepon, Alamat)
+---
+
+### C) Melihat Detail Pasien
+1. **Double click** pada salah satu baris di tabel
+2. Akan muncul dialog **Detail Pasien** berisi:
+    - ID, Nama, Umur, Gender
+    - Diagnosis, Telepon, Alamat
+
+---
 
 ### D) Menghapus Pasien (🗑️ Hapus)
-1. Masukkan ID pasien (biasanya dari form / atau search bar)
-2. Klik **🗑️ Hapus**
-3. Aplikasi akan meminta konfirmasi
-4. Jika setuju → data dihapus dan tabel otomatis refresh
+1. **Klik salah satu baris pasien di tabel** (pilih pasien)
+2. Klik tombol **🗑️ Hapus**
+3. Aplikasi akan menampilkan dialog konfirmasi
+4. Jika dikonfirmasi:
+    - Data pasien dihapus dari BST
+    - Tabel otomatis diperbarui
+
+> Jika belum memilih pasien di tabel, aplikasi akan menampilkan peringatan:  
+> **“Pilih salah satu pasien di tabel terlebih dahulu.”**
+
+---
 
 ### E) Reset Form (♻️ Reset Form)
-- Mengosongkan semua input di form kiri agar mudah input pasien baru
-
-### F) Isi Contoh Data (🧪 Seed)
-- Klik **🧪 Isi Contoh Data** untuk menambahkan 10–15 pasien contoh dengan ID acak
-- Gunanya agar terlihat manfaat:
-    - Data masuk acak
-    - Tetapi tabel tetap tampil **terurut otomatis**
-
-### G) Export CSV (⬇ Export CSV) (Jika digunakan)
-- Menyimpan data pasien (versi terurut) ke file `patients.csv`
+- Mengosongkan seluruh input pada form pasien
+- Digunakan untuk memulai input data baru
 
 ---
 
-## 5) Gambaran UI (Tanpa Screenshot)
-- **Atas:** Judul aplikasi + Search bar + Mode Tampilan
-- **Kiri:** Form input pasien
-- **Kanan:** Tabel daftar pasien (zebra row)
-- **Bawah:** Tombol aksi (Tambah/Hapus/Reset/Seed/Export)
+### F) Isi Contoh Data (🧪 Isi Contoh Data)
+- Menambahkan **10–15 data pasien contoh** dengan ID acak
+- Digunakan untuk menunjukkan bahwa:
+    - Data masuk secara acak
+    - Tetapi tetap ditampilkan **terurut otomatis** berkat BST
 
 ---
 
-## 6) Cara Menjalankan
-### IntelliJ IDEA
-1. Buka project
-2. Jalankan `App.java`
+### G) Export CSV (⬇ Export CSV)
+- Menyimpan data pasien ke file `patients.csv`
+- Data yang diexport adalah **data terurut berdasarkan ID**
 
-### Terminal (javac/java)
+---
+
+## 5) Gambaran Antarmuka (UI)
+- **Bagian Atas:**  
+  Judul aplikasi, Search bar, dan Mode Tampilan
+- **Bagian Kiri:**  
+  Form input data pasien
+- **Bagian Kanan:**  
+  Tabel daftar pasien (dengan zebra row)
+- **Bagian Bawah:**  
+  Tombol aksi (Tambah, Hapus, Reset, Seed, Export)
+
+---
+
+## 6) Cara Menjalankan Aplikasi
+
+### A) Menggunakan IntelliJ IDEA
+1. Buka project di IntelliJ IDEA
+2. Jalankan file `App.java`
+
+### B) Menggunakan Terminal (javac / java)
 Dari root project:
 ```bash
 javac -d out $(find src/main/java -name "*.java")
